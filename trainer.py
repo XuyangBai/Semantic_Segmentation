@@ -7,7 +7,7 @@ import torch.optim as optim
 import time, os
 
 
-class Trainer(nn.object):
+class Trainer(object):
     def __init__(self, args):
         super(Trainer, self).__init__()
         self.epoch = args.epoch
@@ -44,25 +44,23 @@ class Trainer(nn.object):
             if (epoch + 1) % 5 == 0:
                 self.evaluate()
 
-            if (epoch + 1) % 10 == 0:
-                self._snapshot(epoch + 1)
-
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
         print("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
                                                                         self.epoch, self.train_hist['total_time'][0]))
         print("Training finish!... save training results")
+        self.save_model()
 
     def evaluate(self):
         self.model.eval()
-        evaluate(self.model, self.test_dataloader)
+        res = evaluate(self.model, self.test_dataloader)
         self.model.train()
-        return
+        return res
 
-    def _snapshot(self, epoch):
-        torch.save(self.model.state_dict(), self.save_dir + str(epoch) + '.pkl')
-        print(f"Load model to {save_dir + str(epoch)}.pkl")
+    def _save_model(self):
+        torch.save(self.model.state_dict(), self.save_dir + '.pkl')
+        print(f"Load model to {self.save_dir}.pkl")
 
-    def _load_pretrain(self, epoch):
-        self.model.load(self.model.state_dict(), self.save_dir + str(epoch) + '.pkl')
-        print(f"Load model from {save_dir + str(epoch)}.pkl")
+    def _load_pretrain(self):
+        self.model.load(self.model.state_dict(), self.save_dir + '.pkl')
+        print(f"Load model from {self.save_dir}.pkl")

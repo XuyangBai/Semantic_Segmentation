@@ -13,12 +13,14 @@ class OutdoorDataset(data.Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.datapath = []  # every element contains path for image & path for mask
-        for file in os.listdir(""):
+        with open(os.path.join(self.root, split), 'r') as f:
+            ids = f.readlines()
+        for id in ids:
             self.datapath.append(
                 {
-                    'name': file,
-                    'img': file,
-                    'mask': file
+                    'name': id,
+                    'img': os.path.join(self.root, split + '/images/' + id + '.png'),
+                    'mask': os.path.join(self.root, split + '/labels/' + id + '.png')
                 }
             )
 
