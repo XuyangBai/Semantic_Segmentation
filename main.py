@@ -1,0 +1,52 @@
+import numpy as np
+import argparse, os
+import torch
+from trainer import Model
+
+torch.manual_seed(1)
+np.random.seed(1)
+
+
+def parse_args():
+    """parsing and configuration"""
+    desc = "Program Entry for Semantic Segmentation"
+    parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument('--pretrain', type=bool, default=False)
+    parser.add_argument('--epoch', type=int, default=20, help='The number of epochs to run')
+    parser.add_argument('--batch_size', type=int, default=64, help='The size of batch')
+    parser.add_argument('--input_size', type=int, default=256, help='The size of input image')
+    parser.add_argument('--data_dir', type=str, default='data', help='Directory name to data location')
+    parser.add_argument('--save_dir', type=str, default='models', help='Directory name to save the model')
+    parser.add_argument('--result_dir', type=str, default='results', help='Directory name to save the generated images')
+    parser.add_argument('--log_dir', type=str, default='logs', help='Directory name to save training logs')
+    parser.add_argument('--gpu_mode', type=bool, default=False)
+
+    return check_args(parser.parse_args())
+
+
+def check_args(args):
+    """checking arguments"""
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
+    if not os.path.exists(args.result_dir):
+        os.makedirs(args.result_dir)
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir)
+
+    return args
+
+
+def main():
+    # parse arguments
+    args = parse_args()
+    if args is None:
+        exit()
+
+    model = Model(args)
+    model.train()
+    model.evaluation()
+
+
+if __name__ == '__main__':
+    main()
