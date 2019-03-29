@@ -76,6 +76,8 @@ class Trainer(object):
             loss.backward()
             self.optimizer.step()
             loss_buf.append(loss.detach().cpu().numpy())
+            if (iter + 1) % 100 == 0 and verbose:
+                print("Epoch %d [%4d/%d] loss: %.4f, time: %.4f" % (epoch + 1, iter + 1, num_batch + 1, loss, time.time() - epoch_start_time))
         # finish one epoch
         epoch_time = time.time() - epoch_start_time
         self.train_hist['per_epoch_time'].append(epoch_time)
