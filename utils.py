@@ -53,8 +53,8 @@ def intersectionAndUnion(imPred, imLab, numClass):
 
     imPred += 1
     imLab += 1
-    # Remove classes from unlabeled pixels in gt image.
-    # We should not penalize detections in unlabeled portions of the image.
+    # Remove classes from unlabeled pixels in gt images.
+    # We should not penalize detections in unlabeled portions of the images.
     imPred = imPred * (imLab > 0)
 
     # Compute area intersection:
