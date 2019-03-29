@@ -9,11 +9,11 @@ from tqdm import tqdm
 import os
 from PIL import Image as PILImage
 
-PRED_DIR='pred' 
-GT_DIR='val/labels'
-DATA_LIST_PATH='val/val.txt'
+PRED_DIR = 'pred'
+GT_DIR = 'val/labels'
+DATA_LIST_PATH = 'val/val.txt'
 
-NUM_CLASSES=7
+NUM_CLASSES = 7
 
 parser = argparse.ArgumentParser(description="evaluate code")
 
@@ -36,9 +36,9 @@ def main():
         pred_file = os.path.join(args.pred_dir, "%s.png" % img_name)
         gt_file = os.path.join(args.gt_dir, "%s.png" % img_name)
         seg_pred = PILImage.open(pred_file)
-        seg_gt   = PILImage.open(gt_file)
+        seg_gt = PILImage.open(gt_file)
         seg_pred = np.array(seg_pred)
-        seg_gt   = np.array(seg_gt)
+        seg_gt = np.array(seg_gt)
         ignore_index = seg_gt != 255
         seg_gt = seg_gt[ignore_index]
         seg_pred = seg_pred[ignore_index]
@@ -51,27 +51,29 @@ def main():
         IU_array = (tp / np.maximum(1.0, pos + res - tp))
         mean_IU = IU_array.mean()
         tbar.set_description('mIoU: %.4f' % (mean_IU))
-    print({'meanIoU':mean_IU, 'IoU_array':IU_array})
+    print({'meanIoU': mean_IU, 'IoU_array': IU_array})
+
 
 def get_confusion_matrix(gt_label, pred_label, class_num):
-        """
-        Calcute the confusion matrix by given label and pred
-        :param gt_label: the ground truth label
-        :param pred_label: the pred label
-        :param class_num: the nunber of class
-        :return: the confusion matrix
-        """
-        index = (gt_label * class_num + pred_label).astype('int32')
-        label_count = np.bincount(index)
-        confusion_matrix = np.zeros((class_num, class_num))
+    """
+    Calcute the confusion matrix by given label and pred
+    :param gt_label: the ground truth label
+    :param pred_label: the pred label
+    :param class_num: the nunber of class
+    :return: the confusion matrix
+    """
+    index = (gt_label * class_num + pred_label).astype('int32')
+    label_count = np.bincount(index)
+    confusion_matrix = np.zeros((class_num, class_num))
 
-        for i_label in range(class_num):
-            for i_pred_label in range(class_num):
-                cur_index = i_label * class_num + i_pred_label
-                if cur_index < len(label_count):
-                    confusion_matrix[i_label, i_pred_label] = label_count[cur_index]
+    for i_label in range(class_num):
+        for i_pred_label in range(class_num):
+            cur_index = i_label * class_num + i_pred_label
+            if cur_index < len(label_count):
+                confusion_matrix[i_label, i_pred_label] = label_count[cur_index]
 
-        return confusion_matrix
+    return confusion_matrix
+
 
 if __name__ == '__main__':
     main()
