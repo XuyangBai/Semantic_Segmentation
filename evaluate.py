@@ -4,8 +4,26 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from utils import AverageMeter, accuracy, intersectionAndUnion
-from eval import get_confusion_matrix
 
+def get_confusion_matrix(gt_label, pred_label, class_num):
+    """
+    Calcute the confusion matrix by given label and pred
+    :param gt_label: the ground truth label
+    :param pred_label: the pred label
+    :param class_num: the nunber of class
+    :return: the confusion matrix
+    """
+    index = (gt_label * class_num + pred_label).astype('int32')
+    label_count = np.bincount(index)
+    confusion_matrix = np.zeros((class_num, class_num))
+
+    for i_label in range(class_num):
+        for i_pred_label in range(class_num):
+            cur_index = i_label * class_num + i_pred_label
+            if cur_index < len(label_count):
+                confusion_matrix[i_label, i_pred_label] = label_count[cur_index]
+
+    return confusion_matrix
 def cross_entropy2d(output, truth, weight=None, size_average=True):
     # input: (n, c, h, w), target: (n, h, w)
     n, c, h, w = output.size()
