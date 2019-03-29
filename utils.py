@@ -59,8 +59,7 @@ def intersectionAndUnion(imPred, imLab, numClass):
 
     # Compute area intersection:
     intersection = imPred * (imPred == imLab)
-    (area_intersection, _) = np.histogram(
-        intersection, bins=numClass, range=(1, numClass))
+    (area_intersection, _) = np.histogram(intersection, bins=numClass, range=(1, numClass))
 
     # Compute area union:
     (area_pred, _) = np.histogram(imPred, bins=numClass, range=(1, numClass))

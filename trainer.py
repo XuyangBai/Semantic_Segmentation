@@ -42,11 +42,11 @@ class Trainer(object):
         start_time = time.time()
 
         self.model.train()
-        best_iou = 0
+        best_iou = -1
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
-            if (epoch + 1) % 10 == 0 or epoch == 0:
+            if (epoch + 1) % 1 == 0 or epoch == 0:
                 res = self.evaluate()
                 print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
@@ -77,7 +77,8 @@ class Trainer(object):
             self.optimizer.step()
             loss_buf.append(loss.detach().cpu().numpy())
             if (iter + 1) % 100 == 0 and verbose:
-                print("Epoch %d [%4d/%d] loss: %.4f, time: %.4f" % (epoch + 1, iter + 1, num_batch + 1, loss, time.time() - epoch_start_time))
+                print("Epoch %d [%4d/%d] loss: %.4f, time: %.4f" % (
+                    epoch + 1, iter + 1, num_batch + 1, loss, time.time() - epoch_start_time))
         # finish one epoch
         epoch_time = time.time() - epoch_start_time
         self.train_hist['per_epoch_time'].append(epoch_time)
@@ -92,9 +93,11 @@ class Trainer(object):
         return res
 
     def _save_model(self, epoch):
-        torch.save(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
-        print("Save model to %s.pkl" % self.save_dir)
+        save_path = self.save_dir + "/model_" + str(epoch) + '.pkl'
+        torch.save(self.model.state_dict(), save_path)
+        print("Save model to %s.pkl" % save_path)
 
     def _load_pretrain(self, epoch):
-        self.model.load(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
-        print("Load model from %s.pkl" % self.save_dir)
+        save_path = self.save_dir + "/model_" + str(epoch) + '.pkl'
+        self.model.load(self.model.state_dict(), save_path)
+        print("Load model from %s.pkl" % save_path)
