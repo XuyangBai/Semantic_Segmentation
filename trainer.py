@@ -52,6 +52,7 @@ class Trainer(object):
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
                 print("IOU:", list(res['iou']))
                 if res['iou_mean'] > best_iou:
+                    best_iou = res['iou_mean']
                     self._save_model('best')
 
         # finish all epoch
