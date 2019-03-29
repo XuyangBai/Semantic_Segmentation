@@ -46,9 +46,9 @@ class Trainer(object):
 
             if (epoch + 1) % 10 == 0 or epoch == 0:
                 res = self.evaluate()
-                print('Evaluation: Epoch %d: IOU_MEAN: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
+                print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
-                print("IOU:", res['iou'])
+                print("IOU:", list(res['iou']))
                 if res['iou_mean'] > best_iou:
                     self._save_model('best')
 
