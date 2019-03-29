@@ -88,14 +88,12 @@ class Trainer(object):
             self.optimizer.step()
             loss_buf.append(loss.detach().cpu().numpy())
 
-            if (iter + 1) % 10 == 0 and self.verbose:
-                epoch_time = time.time()
-                print(f"Epoch {epoch+1}: [{iter+1:4d}/{num_batch}] loss: {loss:.2f} time: {epoch_time:.2f}s")
         # finish one epoch
         epoch_time = time.time() - epoch_start_time
         self.train_hist['per_epoch_time'].append(epoch_time)
         self.train_hist['loss'].append(np.mean(loss_buf))
-        print(f'Epoch {epoch+1}: Loss {np.mean(loss_buf)}, time {epoch_time:.4f}s')
+        print('Epoch %d: Loss: %.4f, time %.4f s' % (epoch + 1, np.mean(loss_buf), epoch_time))
+        # print(f'Epoch {epoch+1}: Loss {np.mean(loss_buf)}, time {epoch_time:.4f}s')
 
     def evaluate(self):
         self.model.eval()

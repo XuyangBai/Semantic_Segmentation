@@ -15,7 +15,6 @@ def parse_args():
     parser.add_argument('--pretrain', type=bool, default=False)
     parser.add_argument('--epoch', type=int, default=20, help='The number of epochs to run')
     parser.add_argument('--batch_size', type=int, default=64, help='The size of batch')
-    parser.add_argument('--input_size', type=int, default=256, help='The size of input images')
     parser.add_argument('--data_dir', type=str, default='data', help='Directory name to data location')
     parser.add_argument('--save_dir', type=str, default='models', help='Directory name to save the model')
     parser.add_argument('--result_dir', type=str, default='results', help='Directory name to save the generated images')
