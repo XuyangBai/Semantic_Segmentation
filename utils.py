@@ -40,7 +40,6 @@ class AverageMeter(object):
 
 def accuracy(preds, label):
     """Computes prediction accuracy"""
-    preds = preds.max(1)[1]
     valid = (label >= 0)
     acc_sum = (valid * (preds.int() == label.int())).sum()
     valid_sum = valid.sum()
@@ -49,8 +48,8 @@ def accuracy(preds, label):
 
 
 def intersectionAndUnion(imPred, imLab, numClass):
-    imPred = np.asarray(imPred.cpu().detach().numpy()).copy()
-    imLab = np.asarray(imLab.cpu().detach().numpy()).copy()
+    imPred = np.asarray(imPred.int().cpu().detach().numpy()).copy()
+    imLab = np.asarray(imLab.int().cpu().detach().numpy()).copy()
 
     imPred += 1
     imLab += 1

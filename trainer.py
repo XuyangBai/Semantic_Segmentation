@@ -44,7 +44,7 @@ class Trainer(object):
         self.model.train()
         best_iou = 0
         for epoch in range(self.epoch):
-            # self.train_epoch(epoch, self.verbose)
+            self.train_epoch(epoch, self.verbose)
 
             if (epoch + 1) % 10 == 0 or epoch == 0:
                 res = self.evaluate()

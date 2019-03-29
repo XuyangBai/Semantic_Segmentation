@@ -1,13 +1,8 @@
 import argparse
-import scipy
-from scipy import ndimage
-import cv2
 import numpy as np
-import sys
-import json
-from tqdm import tqdm
+from PIL import Image
 import os
-from PIL import Image as PILImage
+from tqdm import tqdm
 
 PRED_DIR = 'pred'
 GT_DIR = 'val/labels'
@@ -35,8 +30,8 @@ def main():
         # print('%d/%d processd'%(index)%(len(testloader)))
         pred_file = os.path.join(args.pred_dir, "%s.png" % img_name)
         gt_file = os.path.join(args.gt_dir, "%s.png" % img_name)
-        seg_pred = PILImage.open(pred_file)
-        seg_gt = PILImage.open(gt_file)
+        seg_pred = Image.open(pred_file)
+        seg_gt = Image.open(gt_file)
         seg_pred = np.array(seg_pred)
         seg_gt = np.array(seg_gt)
         ignore_index = seg_gt != 255

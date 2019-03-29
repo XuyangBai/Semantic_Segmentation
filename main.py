@@ -46,7 +46,6 @@ def main():
 
     trainer = Trainer(args)
     trainer.train()
-    trainer.evaluation()
 
 
 if __name__ == '__main__':

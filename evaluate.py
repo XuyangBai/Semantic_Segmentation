@@ -48,6 +48,7 @@ def evaluate(model, loader, gpu_mode, num_class=7):
         loss_value = loss.data.cpu().numpy()
         loss_meter.update(loss_value)
 
+        output = output.max(1)[1]
         # calculate accuracy
         acc = accuracy(output, mask)
         acc_meter.update(acc)
