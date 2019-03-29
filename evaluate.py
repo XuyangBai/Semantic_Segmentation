@@ -24,6 +24,7 @@ def get_confusion_matrix(gt_label, pred_label, class_num):
                 confusion_matrix[i_label, i_pred_label] = label_count[cur_index]
 
     return confusion_matrix
+
 def cross_entropy2d(output, truth, weight=None, size_average=True):
     # input: (n, c, h, w), target: (n, h, w)
     n, c, h, w = output.size()
@@ -76,9 +77,6 @@ def evaluate(model, loader, gpu_mode, num_class=7):
             mask = mask.int().cpu().detach().numpy()
         seg_pred = np.array(output)
         seg_gt = np.array(mask)
-        ignore_index = seg_gt != 255
-        seg_gt = seg_gt[ignore_index]
-        seg_pred = seg_pred[ignore_index]
         confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
 
         pos = confusion_matrix.sum(1)
