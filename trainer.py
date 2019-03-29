@@ -23,6 +23,8 @@ class Trainer(object):
         self.verbose = args.verbose
 
         self.model = FCN32s()
+        if self.gpu_mode:
+            self.model = self.model.cuda()
         self.parameter = self.model.parameters()
         self.optimizer = optim.Adam(self.parameter, lr=args.learning_rate)
 
