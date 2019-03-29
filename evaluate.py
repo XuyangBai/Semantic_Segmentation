@@ -37,16 +37,12 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     inter_meter = AverageMeter()
     union_meter = AverageMeter()
 
-    # model mode
-    model.eval()
-
     for i_batch, (img, mask) in enumerate(loader):
         if gpu_mode:
             img = img.cuda()
             mask = mask.cuda()
 
         output = model(img)
-
         # calculate loss
         loss = cross_entropy2d(output, mask)
         loss_value = loss.data.cpu().numpy()
