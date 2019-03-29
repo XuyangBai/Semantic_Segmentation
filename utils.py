@@ -40,10 +40,11 @@ class AverageMeter(object):
 
 def accuracy(preds, label):
     """Computes prediction accuracy"""
+    preds = preds.max(1)[1]
     valid = (label >= 0)
-    acc_sum = (valid * (preds == label)).sum()
+    acc_sum = (valid * (preds.int() == label.int())).sum()
     valid_sum = valid.sum()
-    acc = float(acc_sum) / (valid_sum + 1e-10)
+    acc = float(acc_sum) / float(valid_sum + 1e-10)
     return acc
 
 

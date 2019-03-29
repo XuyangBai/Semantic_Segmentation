@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--result_dir', type=str, default='results', help='Directory name to save the generated images')
     parser.add_argument('--log_dir', type=str, default='logs', help='Directory name to save training logs')
     parser.add_argument('--gpu_mode', type=bool, default=False)
-    parser.add_argument('--learning_rate', type=float, default=0.0001)
+    parser.add_argument('--learning_rate', type=float, default=0.001)
     parser.add_argument('--verbose', type=bool, default=True)
 
     return check_args(parser.parse_args())
