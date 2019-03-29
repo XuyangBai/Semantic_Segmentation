@@ -12,7 +12,7 @@ import random
 class OutdoorDataset(data.Dataset):
     def __init__(self, root, split='train'):
         self.dataset = 'OutdoorDataset'
-        self.root = root  # 把解压后的train文件夹放在dataset目录下
+        self.root = root
         self.split = split
         self.datapath = []  # every element contains path for images & path for mask
         with open(os.path.join(self.root, split) + '/' + split + '.txt', 'r') as f:
