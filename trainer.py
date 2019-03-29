@@ -6,24 +6,7 @@ from evaluate import evaluate
 import torch.optim as optim
 import time, os
 from model import FCN32s
-import torch.nn.functional as F
-
-
-def cross_entropy2d(output, truth, weight=None, size_average=True):
-    # input: (n, c, h, w), target: (n, h, w)
-    n, c, h, w = output.size()
-    log_p = F.log_softmax(output, dim=1)
-    # log_p: (n*h*w, c)
-    log_p = log_p.transpose(1, 2).transpose(2, 3).contiguous()
-    log_p = log_p[truth.view(n, h, w, 1).repeat(1, 1, 1, c) >= 0]
-    log_p = log_p.view(-1, c)
-    # target: (n*h*w,)
-    mask = truth >= 0
-    target = truth[mask]
-    loss = F.nll_loss(log_p, target.long(), weight=weight, reduction='sum')
-    if size_average:
-        loss /= mask.data.sum().float()
-    return loss
+from evaluate import cross_entropy2d
 
 
 class Trainer(object):
@@ -31,7 +14,6 @@ class Trainer(object):
         super(Trainer, self).__init__()
         self.epoch = args.epoch
         self.batch_size = args.batch_size
-        self.input_size = args.input_size
         self.data_dir = args.data_dir
 
         self.save_dir = args.save_dir
@@ -41,11 +23,13 @@ class Trainer(object):
         self.verbose = args.verbose
 
         self.model = FCN32s()
+        if self.gpu_mode:
+            self.model = self.model.cuda()
         self.parameter = self.model.parameters()
         self.optimizer = optim.Adam(self.parameter, lr=args.learning_rate)
 
         self.train_dataloader = get_data_loader(self.data_dir, self.batch_size, split='train')
-        self.test_dataloader = get_data_loader(self.data_dir, self.batch_size, split='test')
+        self.test_dataloader = get_data_loader(self.data_dir, self.batch_size, split='val')
 
     def train(self):
         self.train_hist = {
@@ -58,18 +42,23 @@ class Trainer(object):
         start_time = time.time()
 
         self.model.train()
+        best_iou = 0
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
-            if (epoch + 1) % 5 == 0:
-                self.evaluate()
+            if (epoch + 1) % 10 == 0 or epoch == 0:
+                res = self.evaluate()
+                print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
+                    epoch + 1, res['iou_mean'], res['acc'], res['loss']))
+                print("IOU:", list(res['iou']))
+                if res['iou_mean'] > best_iou:
+                    self._save_model('best')
 
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
         print("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
                                                                         self.epoch, self.train_hist['total_time'][0]))
         print("Training finish!... save training results")
-        self._save_model()
 
     def train_epoch(self, epoch, verbose=False):
         epoch_start_time = time.time()
@@ -87,26 +76,25 @@ class Trainer(object):
             loss.backward()
             self.optimizer.step()
             loss_buf.append(loss.detach().cpu().numpy())
-
-            if (iter + 1) % 10 == 0 and self.verbose:
-                epoch_time = time.time()
-                print(f"Epoch {epoch+1}: [{iter+1:4d}/{num_batch}] loss: {loss:.2f} time: {epoch_time:.2f}s")
+            if (iter + 1) % 100 == 0 and verbose:
+                print("Epoch %d [%4d/%d] loss: %.4f, time: %.4f" % (epoch + 1, iter + 1, num_batch + 1, loss, time.time() - epoch_start_time))
         # finish one epoch
         epoch_time = time.time() - epoch_start_time
         self.train_hist['per_epoch_time'].append(epoch_time)
         self.train_hist['loss'].append(np.mean(loss_buf))
-        print(f'Epoch {epoch+1}: Loss {np.mean(loss_buf)}, time {epoch_time:.4f}s')
+        print('Epoch %d: Loss: %.4f, time %.4f s' % (epoch + 1, np.mean(loss_buf), epoch_time))
+        # print(f'Epoch {epoch+1}: Loss {np.mean(loss_buf)}, time {epoch_time:.4f}s')
 
     def evaluate(self):
         self.model.eval()
-        res = evaluate(self.model, self.test_dataloader)
+        res = evaluate(self.model, self.test_dataloader, self.gpu_mode)
         self.model.train()
         return res
 
-    def _save_model(self):
-        torch.save(self.model.state_dict(), self.save_dir + '.pkl')
-        print(f"Load model to {self.save_dir}.pkl")
+    def _save_model(self, epoch):
+        torch.save(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
+        print("Save model to %s.pkl" % self.save_dir)
 
-    def _load_pretrain(self):
-        self.model.load(self.model.state_dict(), self.save_dir + '.pkl')
-        print(f"Load model from {self.save_dir}.pkl")
+    def _load_pretrain(self, epoch):
+        self.model.load(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
+        print("Load model from %s.pkl" % self.save_dir)

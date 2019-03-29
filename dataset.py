@@ -1,6 +1,6 @@
 import torch
 import torch.utils.data as data
-import torchvision.transforms.functional as TF
+import torchvision.transforms.functional as F
 import torchvision.transforms as transforms
 from PIL import Image
 import os
@@ -12,7 +12,7 @@ import random
 class OutdoorDataset(data.Dataset):
     def __init__(self, root, split='train'):
         self.dataset = 'OutdoorDataset'
-        self.root = root  # 把解压后的train文件夹放在dataset目录下
+        self.root = root
         self.split = split
         self.datapath = []  # every element contains path for images & path for mask
         with open(os.path.join(self.root, split) + '/' + split + '.txt', 'r') as f:
@@ -36,22 +36,22 @@ class OutdoorDataset(data.Dataset):
 
         # Random Crop
         i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(800, 600))
-        image = TF.crop(image, i, j, h, w)
-        mask = TF.crop(mask, i, j, h, w)
+        image = F.crop(image, i, j, h, w)
+        mask = F.crop(mask, i, j, h, w)
 
         # Random horizontal flipping
         if random.random() > 0.5:
-            image = TF.hflip(image)
-            mask = TF.hflip(mask)
+            image = F.hflip(image)
+            mask = F.hflip(mask)
 
         # Random vertical flipping
         if random.random() > 0.5:
-            image = TF.vflip(image)
-            mask = TF.vflip(mask)
+            image = F.vflip(image)
+            mask = F.vflip(mask)
 
         # Transform to tensor
-        image = TF.to_tensor(image) * 255
-        mask = TF.to_tensor(mask) * 255
+        image = F.to_tensor(image) * 255
+        mask = F.to_tensor(mask) * 255
 
         return image, mask
 
@@ -61,7 +61,11 @@ class OutdoorDataset(data.Dataset):
         mask_path = self.datapath[index]['mask']
         mask = Image.open(mask_path)
 
-        img, mask = self.transform(img, mask)
+        if self.split == 'train':
+            img, mask = self.transform(img, mask)
+        else:
+            img = F.to_tensor(img) * 255
+            mask = F.to_tensor(mask) * 255
 
         return img, mask
 
@@ -70,7 +74,7 @@ class OutdoorDataset(data.Dataset):
 
 
 if __name__ == '__main__':
-    dataset = OutdoorDataset('data/')
+    dataset = OutdoorDataset('data/', split='test')
     img, msk = dataset[0]
     img_np = img.numpy() / 255
     img_np = np.transpose(img_np, [1, 2, 0])

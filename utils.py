@@ -41,15 +41,15 @@ class AverageMeter(object):
 def accuracy(preds, label):
     """Computes prediction accuracy"""
     valid = (label >= 0)
-    acc_sum = (valid * (preds == label)).sum()
+    acc_sum = (valid * (preds.int() == label.int())).sum()
     valid_sum = valid.sum()
-    acc = float(acc_sum) / (valid_sum + 1e-10)
+    acc = float(acc_sum) / float(valid_sum + 1e-10)
     return acc
 
 
 def intersectionAndUnion(imPred, imLab, numClass):
-    imPred = np.asarray(imPred).copy()
-    imLab = np.asarray(imLab).copy()
+    imPred = np.asarray(imPred.int().cpu().detach().numpy()).copy()
+    imLab = np.asarray(imLab.int().cpu().detach().numpy()).copy()
 
     imPred += 1
     imLab += 1

@@ -15,13 +15,12 @@ def parse_args():
     parser.add_argument('--pretrain', type=bool, default=False)
     parser.add_argument('--epoch', type=int, default=20, help='The number of epochs to run')
     parser.add_argument('--batch_size', type=int, default=64, help='The size of batch')
-    parser.add_argument('--input_size', type=int, default=256, help='The size of input images')
     parser.add_argument('--data_dir', type=str, default='data', help='Directory name to data location')
     parser.add_argument('--save_dir', type=str, default='models', help='Directory name to save the model')
     parser.add_argument('--result_dir', type=str, default='results', help='Directory name to save the generated images')
     parser.add_argument('--log_dir', type=str, default='logs', help='Directory name to save training logs')
     parser.add_argument('--gpu_mode', type=bool, default=False)
-    parser.add_argument('--learning_rate', type=float, default=0.0001)
+    parser.add_argument('--learning_rate', type=float, default=0.001)
     parser.add_argument('--verbose', type=bool, default=True)
 
     return check_args(parser.parse_args())
@@ -47,7 +46,6 @@ def main():
 
     trainer = Trainer(args)
     trainer.train()
-    trainer.evaluation()
 
 
 if __name__ == '__main__':
