@@ -48,8 +48,8 @@ def accuracy(preds, label):
 
 
 def intersectionAndUnion(imPred, imLab, numClass):
-    imPred = np.asarray(imPred).copy()
-    imLab = np.asarray(imLab).copy()
+    imPred = np.asarray(imPred.detach().numpy()).copy()
+    imLab = np.asarray(imLab.detach().numpy()).copy()
 
     imPred += 1
     imLab += 1

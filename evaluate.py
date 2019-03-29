@@ -1,15 +1,29 @@
-# System libs
 import time
-# Numerical libs
 import numpy as np
 import torch
 import torch.nn as nn
-# Local libs
+import torch.nn.functional as F
 from utils import AverageMeter, accuracy, intersectionAndUnion
 
 
-# TODO: implement the evaluation (IOU, accuracy, loss)
-def evaluate(model, loader, args):
+def cross_entropy2d(output, truth, weight=None, size_average=True):
+    # input: (n, c, h, w), target: (n, h, w)
+    n, c, h, w = output.size()
+    log_p = F.log_softmax(output, dim=1)
+    # log_p: (n*h*w, c)
+    log_p = log_p.transpose(1, 2).transpose(2, 3).contiguous()
+    log_p = log_p[truth.view(n, h, w, 1).repeat(1, 1, 1, c) >= 0]
+    log_p = log_p.view(-1, c)
+    # target: (n*h*w,)
+    mask = truth >= 0
+    target = truth[mask]
+    loss = F.nll_loss(log_p, target.long(), weight=weight, reduction='sum')
+    if size_average:
+        loss /= mask.data.sum().float()
+    return loss
+
+
+def evaluate(model, loader, gpu_mode, num_class=7):
     # output format
     res = {
         'loss': 0.1,
@@ -22,26 +36,19 @@ def evaluate(model, loader, args):
     acc_meter = AverageMeter()
     inter_meter = AverageMeter()
     union_meter = AverageMeter()
-    time_meter = AverageMeter()
 
     # model mode
     model.eval()
 
     for i_batch, (img, mask) in enumerate(loader):
-        if args.gpu_mode:
+        if gpu_mode:
             img = img.cuda()
             mask = mask.cuda()
 
-        torch.cuda.synchronize()
-        tic = time.perf_counter()
         output = model(img)
-        torch.cuda.synchronize()
-
-        time_meter.update(time.perf_counter() - tic)
 
         # calculate loss
-        loss_fn = nn.CrossEntropyLoss()
-        loss = loss_fn(output, mask)
+        loss = cross_entropy2d(output, mask)
         loss_value = loss.data.cpu().numpy()
         loss_meter.update(loss_value)
 
@@ -50,18 +57,19 @@ def evaluate(model, loader, args):
         acc_meter.update(acc)
 
         # calculate iou
-        intersection, union = intersectionAndUnion(output, mask, args.num_class)
+        intersection, union = intersectionAndUnion(output, mask, num_class)
         inter_meter.update(intersection)
         union_meter.update(union)
 
     # summary
     iou = inter_meter.sum / (union_meter.sum + 1e-10)
-    iou_mean = iou.mean().cpu().numpy()
-    acc_mean = acc_meter.average().cpu().numpy()
-    loss_mean = loss_meter.average().cpu().numpy()
+    iou_mean = iou.mean()
+    acc_mean = acc_meter.average()
+    loss_mean = loss_meter.average()
 
     res['loss'] = loss_mean
     res['acc'] = acc_mean
-    res['iou'] = iou_mean
+    res['iou'] = iou
+    res['iou_mean'] = iou_mean
 
     return res
