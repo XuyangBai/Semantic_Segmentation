@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils import AverageMeter, accuracy, intersectionAndUnion
 
+
 def get_confusion_matrix(gt_label, pred_label, class_num):
     """
     Calcute the confusion matrix by given label and pred
@@ -24,6 +25,7 @@ def get_confusion_matrix(gt_label, pred_label, class_num):
                 confusion_matrix[i_label, i_pred_label] = label_count[cur_index]
 
     return confusion_matrix
+
 
 def cross_entropy2d(output, truth, weight=None, size_average=True):
     # input: (n, c, h, w), target: (n, h, w)
@@ -56,6 +58,7 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     inter_meter = AverageMeter()
     union_meter = AverageMeter()
 
+    confusion_matrix = np.zeros((num_class, num_class))
     for i_batch, (img, mask) in enumerate(loader):
         if gpu_mode:
             img = img.cuda()
@@ -72,30 +75,30 @@ def evaluate(model, loader, gpu_mode, num_class=7):
         acc = accuracy(output, mask)
         acc_meter.update(acc)
 
-        if gpu_mode:
-            output = output.int().cpu().detach().numpy()
-            mask = mask.int().cpu().detach().numpy()
-        seg_pred = np.array(output)
-        seg_gt = np.array(mask)
-        confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
+        # if gpu_mode:
+        #     output = output.int().cpu().detach().numpy()
+        #     mask = mask.int().cpu().detach().numpy()
+        # seg_pred = np.array(output).reshape(1, -1)
+        # seg_gt = np.array(mask).reshape(1, -1)
+        # confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
+        #
+        # pos = confusion_matrix.sum(1)
+        # res = confusion_matrix.sum(0)
+        # tp = np.diag(confusion_matrix)
+        #
+        # IU_array = (tp / np.maximum(1.0, pos + res - tp))
+        # mean_IU = IU_array.mean()
 
-        pos = confusion_matrix.sum(1)
-        res = confusion_matrix.sum(0)
-        tp = np.diag(confusion_matrix)
-
-        IU_array = (tp / np.maximum(1.0, pos + res - tp))
-        mean_IU = IU_array.mean()
-        
         # calculate iou
-        # intersection, union = intersectionAndUnion(output, mask, num_class)
-        # inter_meter.update(intersection)
-        # union_meter.update(union)
+        intersection, union = intersectionAndUnion(output, mask, num_class)
+        inter_meter.update(intersection)
+        union_meter.update(union)
 
     # summary
-    iou = IU_array
-    iou_mean = IU_array.mean()
-    # iou = inter_meter.sum / (union_meter.sum + 1e-10)
-    # iou_mean = iou.mean()
+    # iou = IU_array
+    # iou_mean = IU_array.mean()
+    iou = inter_meter.sum / (union_meter.sum + 1e-10)
+    iou_mean = iou.mean()
     acc_mean = acc_meter.average()
     loss_mean = loss_meter.average()
 
