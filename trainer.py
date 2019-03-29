@@ -46,7 +46,7 @@ class Trainer(object):
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
-            if (epoch + 1) % 10 == 0 or epoch == 0:
+            if (epoch + 1) % 1 == 0 or epoch == 0:
                 res = self.evaluate()
                 print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
