@@ -58,18 +58,22 @@ class Trainer(object):
         start_time = time.time()
 
         self.model.train()
+        best_iou = 0
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
-            if (epoch + 1) % 5 == 0:
-                self.evaluate()
+            if (epoch + 1) % 10 == 0 or epoch == 0:
+                res = self.evaluate()
+                print('Evaluation: Epoch %d: IOU: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
+                epoch + 1, res['iou'], res['acc'], res['loss']))
+                if res['iou'] > best_iou:
+                    self._save_model('best')
 
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
         print("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
                                                                         self.epoch, self.train_hist['total_time'][0]))
         print("Training finish!... save training results")
-        self._save_model()
 
     def train_epoch(self, epoch, verbose=False):
         epoch_start_time = time.time()
@@ -97,14 +101,14 @@ class Trainer(object):
 
     def evaluate(self):
         self.model.eval()
-        res = evaluate(self.model, self.test_dataloader)
+        res = evaluate(self.model, self.test_dataloader, self.gpu_mode)
         self.model.train()
         return res
 
-    def _save_model(self):
-        torch.save(self.model.state_dict(), self.save_dir + '.pkl')
-        print(f"Load model to {self.save_dir}.pkl")
+    def _save_model(self, epoch):
+        torch.save(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
+        print("Load model to %s.pkl" % self.save_dir)
 
-    def _load_pretrain(self):
-        self.model.load(self.model.state_dict(), self.save_dir + '.pkl')
-        print(f"Load model from {self.save_dir}.pkl")
+    def _load_pretrain(self, epoch):
+        self.model.load(self.model.state_dict(), self.save_dir + "_" + str(epoch) + '.pkl')
+        print(f"Load model from %s.pkl" % self.save_dir)

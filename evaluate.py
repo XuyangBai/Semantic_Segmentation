@@ -9,7 +9,7 @@ from utils import AverageMeter, accuracy, intersectionAndUnion
 
 
 # TODO: implement the evaluation (IOU, accuracy, loss)
-def evaluate(model, loader, args):
+def evaluate(model, loader, gpu_mode, num_class=7):
     # output format
     res = {
         'loss': 0.1,
@@ -28,7 +28,7 @@ def evaluate(model, loader, args):
     model.eval()
 
     for i_batch, (img, mask) in enumerate(loader):
-        if args.gpu_mode:
+        if gpu_mode:
             img = img.cuda()
             mask = mask.cuda()
 
@@ -50,7 +50,7 @@ def evaluate(model, loader, args):
         acc_meter.update(acc)
 
         # calculate iou
-        intersection, union = intersectionAndUnion(output, mask, args.num_class)
+        intersection, union = intersectionAndUnion(output, mask, num_class)
         inter_meter.update(intersection)
         union_meter.update(union)
 
