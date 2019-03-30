@@ -6,7 +6,8 @@ from evaluate import evaluate
 import torch.optim as optim
 import time, os
 from PIL import Image
-from model import FCN32s
+from fcn32s import FCN32s
+from fcn16s import FCN16s
 from evaluate import cross_entropy2d
 
 
@@ -23,7 +24,13 @@ class Trainer(object):
         self.gpu_mode = args.gpu_mode
         self.verbose = args.verbose
 
-        self.model = FCN32s()
+        if args.model == 'fcn16s':
+            self.model = FCN16s()
+        elif args.model == 'fcn32s':
+            self.model = FCN32s()
+        else:
+            print("No this model type")
+            exit(-1)
         if self.gpu_mode:
             self.model = self.model.cuda()
         self.parameter = self.model.parameters()
