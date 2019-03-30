@@ -54,7 +54,8 @@ class Trainer(object):
                 if res['iou_mean'] > best_iou:
                     best_iou = res['iou_mean']
                     self._save_model('best')
-
+            if (epoch + 1) % 5 == 0:
+                self._save_model(epoch + 1)
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
         print("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
