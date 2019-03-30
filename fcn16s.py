@@ -67,6 +67,7 @@ class FCN16s(nn.Module):
             n_class, n_class, 32, stride=16, bias=False)
 
         self._initialize_weights()
+        self.copy_params_from_vgg16()
 
     def _initialize_weights(self):
         for m in self.modules():
