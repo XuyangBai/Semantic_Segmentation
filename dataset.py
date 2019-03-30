@@ -74,7 +74,7 @@ class OutdoorDataset(data.Dataset):
 
 
 if __name__ == '__main__':
-    dataset = OutdoorDataset('data/', split='test')
+    dataset = OutdoorDataset('data/', split='val')
     img, msk = dataset[0]
     img_np = img.numpy() / 255
     img_np = np.transpose(img_np, [1, 2, 0])

@@ -29,7 +29,7 @@ class Trainer(object):
         self.optimizer = optim.Adam(self.parameter, lr=args.learning_rate)
 
         self.train_dataloader = get_data_loader(self.data_dir, self.batch_size, split='train')
-        self.test_dataloader = get_data_loader(self.data_dir, self.batch_size, split='val')
+        self.test_dataloader = get_data_loader(self.data_dir, 1, split='val')
 
     def train(self):
         self.train_hist = {
