@@ -59,7 +59,7 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     union_meter = AverageMeter()
 
     confusion_matrix = np.zeros((num_class, num_class))
-    for i_batch, (img, mask) in enumerate(loader):
+    for i_batch, (img, mask, _) in enumerate(loader):
         if gpu_mode:
             img = img.cuda()
             mask = mask.cuda()

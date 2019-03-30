@@ -67,7 +67,7 @@ class OutdoorDataset(data.Dataset):
             img = F.to_tensor(img) * 255
             mask = F.to_tensor(mask) * 255
 
-        return img, mask
+        return img, mask, self.datapath[index]['name']
 
     def __len__(self):
         return len(self.datapath)
@@ -75,7 +75,8 @@ class OutdoorDataset(data.Dataset):
 
 if __name__ == '__main__':
     dataset = OutdoorDataset('data/', split='val')
-    img, msk = dataset[0]
+    img, msk, id = dataset[0]
+    print(id)
     img_np = img.numpy() / 255
     img_np = np.transpose(img_np, [1, 2, 0])
     plt.imshow(img_np)

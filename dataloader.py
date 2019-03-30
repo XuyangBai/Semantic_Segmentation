@@ -13,7 +13,7 @@ def get_data_loader(root, batch_size, split='train', num_workers=4):
 if __name__ == '__main__':
     trainloader = get_data_loader('data', batch_size=2, split='train')
     testloader = get_data_loader('data', batch_size=1, split='val')
-    for iter, (img, msk) in enumerate(trainloader):
+    for iter, (img, msk, id) in enumerate(trainloader):
         pass
-    for iter, (img, msk) in enumerate(testloader):
+    for iter, (img, msk, id) in enumerate(testloader):
         pass

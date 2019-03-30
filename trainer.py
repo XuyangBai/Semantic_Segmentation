@@ -5,6 +5,7 @@ from dataloader import get_data_loader
 from evaluate import evaluate
 import torch.optim as optim
 import time, os
+from PIL import Image
 from model import FCN32s
 from evaluate import cross_entropy2d
 
@@ -30,6 +31,9 @@ class Trainer(object):
 
         self.train_dataloader = get_data_loader(self.data_dir, self.batch_size, split='train')
         self.test_dataloader = get_data_loader(self.data_dir, 1, split='val')
+
+        if args.pretrain != '':
+            self._load_pretrain(args.pretrain)
 
     def train(self):
         self.train_hist = {
@@ -66,7 +70,7 @@ class Trainer(object):
         epoch_start_time = time.time()
         loss_buf = []
         num_batch = int(len(self.train_dataloader.dataset) / self.batch_size)
-        for iter, (img, msk) in enumerate(self.train_dataloader):
+        for iter, (img, msk, _) in enumerate(self.train_dataloader):
             if self.gpu_mode:
                 img = img.cuda()
                 msk = msk.cuda()
@@ -97,9 +101,23 @@ class Trainer(object):
     def _save_model(self, epoch):
         save_path = self.save_dir + "/model_" + str(epoch) + '.pkl'
         torch.save(self.model.state_dict(), save_path)
-        print("Save model to %s.pkl" % save_path)
+        print("Save model to %s" % save_path)
 
-    def _load_pretrain(self, epoch):
-        save_path = self.save_dir + "/model_" + str(epoch) + '.pkl'
-        self.model.load(self.model.state_dict(), save_path)
-        print("Load model from %s.pkl" % save_path)
+    def _load_pretrain(self, pretrain):
+        state_dict = torch.load(pretrain, map_location='cpu')
+        self.model.load_state_dict(state_dict)
+        print("Load model from %s" % pretrain)
+
+    def generate_output(self):
+        save_dir = os.path.join(self.data_dir, 'val/predicts/')
+        for iter, (img, msk, id) in enumerate(self.test_dataloader):
+            id = id[0]
+            if self.gpu_mode:
+                img = img.cuda()
+                msk = msk.cuda()
+            output = self.model(img).max(1)[1]
+            output = output.numpy()[0]
+            im = Image.fromarray(np.uint8(output))
+            im.save(save_dir + id + '.png')
+            # Image.save(save_dir + id + '.png', output)
+            print(f"save {id}.png")
