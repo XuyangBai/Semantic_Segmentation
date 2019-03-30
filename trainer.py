@@ -127,4 +127,4 @@ class Trainer(object):
             im = Image.fromarray(np.uint8(output))
             im.save(save_dir + id + '.png')
             # Image.save(save_dir + id + '.png', output)
-            print(f"save {id}.png")
+            print("save %s.png" % save_dir)
