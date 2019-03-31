@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from tensorboardX import SummaryWriter
+
 from dataloader import get_data_loader
 from evaluate import evaluate
 import torch.optim as optim
@@ -8,6 +10,7 @@ import time, os
 from PIL import Image
 from fcn32s import FCN32s
 from fcn16s import FCN16s
+from fcn8s import FCN8s
 from evaluate import cross_entropy2d
 
 
@@ -28,6 +31,8 @@ class Trainer(object):
             self.model = FCN16s()
         elif args.model == 'fcn32s':
             self.model = FCN32s()
+        elif args.model == 'fcn8s':
+            self.model = FCN8s()
         else:
             print("No this model type")
             exit(-1)
@@ -35,9 +40,13 @@ class Trainer(object):
             self.model = self.model.cuda()
         self.parameter = self.model.parameters()
         self.optimizer = optim.Adam(self.parameter, lr=args.learning_rate)
+        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.5)
 
         self.train_dataloader = get_data_loader(self.data_dir, self.batch_size, split='train')
         self.test_dataloader = get_data_loader(self.data_dir, 1, split='val')
+
+        experiment_id = args.model + time.strftime('%m%d%H%m')
+        self.writer = SummaryWriter(log_dir=self.log_dir + '/tboard_' + experiment_id)
 
         if args.pretrain != '':
             self._load_pretrain(args.pretrain)
@@ -65,8 +74,17 @@ class Trainer(object):
                 if res['iou_mean'] > best_iou:
                     best_iou = res['iou_mean']
                     self._save_model('best')
+
+            if epoch % 10 == 0:
+                self.scheduler.step()
+
             if (epoch + 1) % 5 == 0:
                 self._save_model(epoch + 1)
+
+            if self.writer:
+                self.writer.add_scalar('Learning Rate', self._get_lr(), epoch)
+                self.writer.add_scalar('Loss', res['loss'], epoch)
+
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
         print("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
@@ -114,6 +132,9 @@ class Trainer(object):
         state_dict = torch.load(pretrain, map_location='cpu')
         self.model.load_state_dict(state_dict)
         print("Load model from %s" % pretrain)
+
+    def _get_lr(self, group=0):
+        return self.optimizer.param_groups[group]['lr']
 
     def generate_output(self):
         save_dir = os.path.join(self.data_dir, 'val/predicts/')
