@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 
 from dataloader import get_data_loader
 from evaluate import evaluate
@@ -45,8 +45,8 @@ class Trainer(object):
         self.train_dataloader = get_data_loader(self.data_dir, self.batch_size, split='train')
         self.test_dataloader = get_data_loader(self.data_dir, 1, split='val')
 
-        experiment_id = args.model + time.strftime('%m%d%H%m')
-        self.writer = SummaryWriter(log_dir=self.log_dir + '/tboard_' + experiment_id)
+        # experiment_id = args.model + time.strftime('%m%d%H%m')
+        # self.writer = SummaryWriter(log_dir=self.log_dir + '/tboard_' + experiment_id)
 
         if args.pretrain != '':
             self._load_pretrain(args.pretrain)
@@ -81,9 +81,9 @@ class Trainer(object):
             if (epoch + 1) % 5 == 0:
                 self._save_model(epoch + 1)
 
-            if self.writer:
-                self.writer.add_scalar('Learning Rate', self._get_lr(), epoch)
-                self.writer.add_scalar('Loss', res['loss'], epoch)
+            # if self.writer:
+            #     self.writer.add_scalar('Learning Rate', self._get_lr(), epoch)
+            #     self.writer.add_scalar('Loss', res['loss'], epoch)
 
         # finish all epoch
         self.train_hist['total_time'].append(time.time() - start_time)
