@@ -11,6 +11,7 @@ from PIL import Image
 from fcn32s import FCN32s
 from fcn16s import FCN16s
 from fcn8s import FCN8s
+from pspnet import PSPnet
 from evaluate import cross_entropy2d
 
 
@@ -33,6 +34,8 @@ class Trainer(object):
             self.model = FCN32s()
         elif args.model == 'fcn8s':
             self.model = FCN8s()
+        elif args.model == 'pspnet':
+            self.model = PSPnet()
         else:
             print("No this model type")
             exit(-1)
