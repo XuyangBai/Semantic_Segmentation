@@ -67,7 +67,7 @@ class PSPnet(nn.Module):
         self, n_classes=7, block_config=[3, 4, 6, 3], input_size=(800, 600), version=None
     ):
 
-        super(pspnet, self).__init__()
+        super(PSPnet, self).__init__()
 
         self.block_config = (
             pspnet_specs[version]["block_config"] if version is not None else block_config
