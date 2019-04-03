@@ -72,8 +72,8 @@ class Trainer(object):
                 print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
                 print("IOU:", list(res['iou']))
-                print("Weight:", list(self.weight))
                 self.update_weight(res['iou'])
+                print("Weight:", list(self.weight.cpu().detach().numpy()))
                 if res['iou_mean'] > best_iou:
                     best_iou = res['iou_mean']
                     self._save_model('best')
@@ -100,6 +100,7 @@ class Trainer(object):
         num_batch = int(len(self.train_dataloader.dataset) / self.batch_size)
         for iter, (img, msk, _) in enumerate(self.train_dataloader):
             if self.gpu_mode:
+                self.weight = self.weight.cuda()
                 img = img.cuda()
                 msk = msk.cuda()
             # forward
@@ -146,7 +147,8 @@ class Trainer(object):
             if iou != 0:
                 w.append(1 / iou)
             else:
-                w.append(0)
+                w.append(10)
+        w[2] = 0
         self.weight = torch.FloatTensor([x / sum(w) for x in w])
 
     def generate_output(self):
