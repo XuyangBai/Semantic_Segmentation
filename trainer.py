@@ -63,6 +63,7 @@ class Trainer(object):
 
         self.model.train()
         best_iou = -1
+        self.weight = torch.FloatTensor([1.66, 1.66, 1.66, 0, 1.66, 1.66, 1.66])
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
@@ -71,6 +72,8 @@ class Trainer(object):
                 print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc'], res['loss']))
                 print("IOU:", list(res['iou']))
+                print("Weight:", list(self.weight))
+                self.update_weight(res['iou'])
                 if res['iou_mean'] > best_iou:
                     best_iou = res['iou_mean']
                     self._save_model('best')
@@ -102,7 +105,8 @@ class Trainer(object):
             # forward
             self.optimizer.zero_grad()
             output = self.model(img)
-            loss = cross_entropy2d(output, msk)
+            # add more weight to the category with lower iou.
+            loss = cross_entropy2d(output, msk, self.weight)
             # backward
             loss.backward()
             self.optimizer.step()
@@ -135,6 +139,15 @@ class Trainer(object):
 
     def _get_lr(self, group=0):
         return self.optimizer.param_groups[group]['lr']
+
+    def update_weight(self, iou_list):
+        w = []
+        for iou in iou_list:
+            if iou != 0:
+                w.append(1 / iou)
+            else:
+                w.append(0)
+        self.weight = torch.FloatTensor([x / sum(w) for x in w])
 
     def generate_output(self):
         save_dir = os.path.join(self.data_dir, 'val/predicts/')
