@@ -47,28 +47,21 @@ def cross_entropy2d(output, truth, weight=None, size_average=True):
 def evaluate(model, loader, gpu_mode, num_class=7):
     # output format
     res = {
-        'loss': 0.1,
         'acc': 0.2,  # or acc for every category,
         'iou': 0.3
     }
 
     # metric meters
-    loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     inter_meter = AverageMeter()
     union_meter = AverageMeter()
 
-    confusion_matrix = np.zeros((num_class, num_class))
     for i_batch, (img, mask, _) in enumerate(loader):
         if gpu_mode:
             img = img.cuda()
             mask = mask.cuda()
 
         output = model(img)
-        # calculate loss
-        loss = cross_entropy2d(output, mask)
-        loss_value = loss.data.cpu().numpy()
-        loss_meter.update(loss_value)
 
         output = output.max(1)[1]
         # calculate accuracy
@@ -93,6 +86,8 @@ def evaluate(model, loader, gpu_mode, num_class=7):
         intersection, union = intersectionAndUnion(output, mask, num_class)
         inter_meter.update(intersection)
         union_meter.update(union)
+        del output
+        del acc
 
     # summary
     # iou = IU_array
@@ -100,9 +95,7 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     iou = inter_meter.sum / (union_meter.sum + 1e-10)
     iou_mean = iou.mean()
     acc_mean = acc_meter.average()
-    loss_mean = loss_meter.average()
 
-    res['loss'] = loss_mean
     res['acc'] = acc_mean
     res['iou'] = iou
     res['iou_mean'] = iou_mean

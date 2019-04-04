@@ -29,13 +29,13 @@ class OutdoorDataset(data.Dataset):
 
     def transform(self, image, mask):
         # Resize
-        resize_img = transforms.Resize(size=(960, 720), interpolation=Image.BILINEAR)
-        resize_mask = transforms.Resize(size=(960, 720), interpolation=Image.NEAREST)
+        resize_img = transforms.Resize(size=(800, 600), interpolation=Image.BILINEAR)
+        resize_mask = transforms.Resize(size=(800, 600), interpolation=Image.NEAREST)
         image = resize_img(image)
         mask = resize_mask(mask)
 
         # Random Crop
-        i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(800, 600))
+        i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(512, 512))
         image = F.crop(image, i, j, h, w)
         mask = F.crop(mask, i, j, h, w)
 

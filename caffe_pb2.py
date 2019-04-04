@@ -1255,7 +1255,7 @@ _NETPARAMETER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='force_backward', full_name='caffe.NetParameter.force_backward', index=4,
+        name='force_backward', full_name='caffe.NetParameter.force_backward', index=4,
       number=5, type=8, cpp_type=7, label=1,
       has_default_value=True, default_value=False,
       message_type=None, enum_type=None, containing_type=None,

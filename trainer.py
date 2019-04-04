@@ -72,8 +72,8 @@ class Trainer(object):
 
             if (epoch + 1) % 1 == 0 or epoch == 0:
                 res = self.evaluate()
-                print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f, Loss: %.4f,  ' % (
-                    epoch + 1, res['iou_mean'], res['acc'], res['loss']))
+                print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f,  ' % (
+                    epoch + 1, res['iou_mean'], res['acc']))
                 print("IOU:", list(res['iou']))
                 self.update_weight(res['iou'])
                 print("Weight:", list(self.weight.cpu().detach().numpy()))
@@ -118,16 +118,19 @@ class Trainer(object):
             if (iter + 1) % 100 == 0 and verbose:
                 print("Epoch %d [%4d/%d] loss: %.4f, time: %.4f" % (
                     epoch + 1, iter + 1, num_batch + 1, loss, time.time() - epoch_start_time))
+            del loss
+            del output
         # finish one epoch
         epoch_time = time.time() - epoch_start_time
         self.train_hist['per_epoch_time'].append(epoch_time)
         self.train_hist['loss'].append(np.mean(loss_buf))
         print('Epoch %d: Loss: %.4f, time %.4f s' % (epoch + 1, np.mean(loss_buf), epoch_time))
+        del loss_buf
         # print(f'Epoch {epoch+1}: Loss {np.mean(loss_buf)}, time {epoch_time:.4f}s')
 
     def evaluate(self):
         self.model.eval()
-        res = evaluate(self.model, self.test_dataloader, self.gpu_mode)
+        res = evaluate(self.model, self.test_dataloader, True)
         self.model.train()
         return res
 
