@@ -48,7 +48,8 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     # output format
     res = {
         'acc': 0.2,  # or acc for every category,
-        'iou': 0.3
+        'iou': 0.3,
+        'iou_mean': 0.4
     }
 
     # metric meters
