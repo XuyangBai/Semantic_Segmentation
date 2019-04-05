@@ -66,7 +66,7 @@ class Trainer(object):
 
         self.model.train()
         best_iou = -1
-        self.weight = torch.FloatTensor([1.66, 1.66, 1.66, 0, 1.66, 1.66, 1.66])
+        # self.weight = torch.FloatTensor([1.66, 1.66, 1.66, 0, 1.66, 1.66, 1.66])
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
 
@@ -75,13 +75,13 @@ class Trainer(object):
                 print('Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f,  ' % (
                     epoch + 1, res['iou_mean'], res['acc']))
                 print("IOU:", list(res['iou']))
-                self.update_weight(res['iou'])
-                print("Weight:", list(self.weight.cpu().detach().numpy()))
+                # self.update_weight(res['iou'])
+                # print("Weight:", list(self.weight.cpu().detach().numpy()))
                 if res['iou_mean'] > best_iou:
                     best_iou = res['iou_mean']
                     self._save_model('best')
 
-            if epoch % 10 == 0:
+            if epoch % 4 == 0:
                 self.scheduler.step()
 
             if (epoch + 1) % 5 == 0:
@@ -103,14 +103,15 @@ class Trainer(object):
         num_batch = int(len(self.train_dataloader.dataset) / self.batch_size)
         for iter, (img, msk, _) in enumerate(self.train_dataloader):
             if self.gpu_mode:
-                self.weight = self.weight.cuda()
+                # self.weight = self.weight.cuda()
                 img = img.cuda()
                 msk = msk.cuda()
             # forward
             self.optimizer.zero_grad()
             output = self.model(img)
             # add more weight to the category with lower iou.
-            loss = cross_entropy2d(output, msk, self.weight)
+            # loss = cross_entropy2d(output, msk, self.weight)
+            loss = cross_entropy2d(output, msk)
             # backward
             loss.backward()
             self.optimizer.step()
