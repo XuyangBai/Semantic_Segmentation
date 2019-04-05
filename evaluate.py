@@ -74,8 +74,8 @@ def evaluate(model, loader, gpu_mode, num_class=7):
         if gpu_mode:
             output = output.int().cpu().detach().numpy()
             mask = mask.int().cpu().detach().numpy()
-        seg_pred = np.array(output).reshape(1, -1)
-        seg_gt = np.array(mask).reshape(1, -1)
+        seg_pred = np.array(output)
+        seg_gt = np.array(mask)
         confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
 
         pos = confusion_matrix.sum(1)
