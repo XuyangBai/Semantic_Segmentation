@@ -72,8 +72,8 @@ def evaluate(model, loader, gpu_mode, num_class=7):
 
         # calculate iou(ta)
         if gpu_mode:
-            output = output.int().cpu().detach().numpy()
-            mask = mask.int().cpu().detach().numpy()
+            output = output.int().cpu().detach()
+            mask = mask.int().cpu().detach()
         seg_pred = np.array(output)
         seg_gt = np.array(mask)
         ignore_index = seg_gt != 255
