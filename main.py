@@ -13,6 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument('--epoch', type=int, default=20, help='The number of epochs to run')
+    parser.add_argument('--test', type=str, default=False)
     parser.add_argument('--model', type=str, default='fcn16s')
     parser.add_argument('--batch_size', type=int, default=4, help='The size of batch')
     parser.add_argument('--data_dir', type=str, default='data', help='Directory name to data location')
@@ -46,7 +47,15 @@ def main():
         exit()
 
     trainer = Trainer(args)
-    trainer.train()
+    if not args.test:
+        trainer.train()
+    else:
+        if args.pretrain == '':
+            print("Trained model unspecified")
+            exit(-1)
+        res = trainer.evaluate()
+        print('Evaluation: Iou_mean: %.4f, Acc: %.4f,  ' % (
+            res['iou_mean'], res['acc']))
     # trainer.generate_output()
 
 
