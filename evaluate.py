@@ -57,7 +57,7 @@ def evaluate(model, loader, gpu_mode, num_class=7):
     inter_meter = AverageMeter()
     union_meter = AverageMeter()
 
-    confusion_matrix = np.zeros((num_class, num_class))
+    # confusion_matrix = np.zeros((num_class, num_class))
 
     for i_batch, (img, mask, _) in enumerate(loader):
         if gpu_mode:
@@ -72,34 +72,34 @@ def evaluate(model, loader, gpu_mode, num_class=7):
         acc_meter.update(acc)
 
         # calculate iou(ta)
-        if gpu_mode:
-            output = output.int().cpu().detach()
-            mask = mask.int().cpu().detach()
-        seg_pred = np.array(output)
-        seg_gt = np.array(mask)
-        ignore_index = seg_gt != 255
-        seg_gt = seg_gt[ignore_index]
-        seg_pred = seg_pred[ignore_index]
-        confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
-
-        pos = confusion_matrix.sum(1)
-        res = confusion_matrix.sum(0)
-        tp = np.diag(confusion_matrix)
-
-        IU_array = (tp / np.maximum(1.0, pos + res - tp))
+        # if gpu_mode:
+        #     output = output.int().cpu().detach()
+        #     mask = mask.int().cpu().detach()
+        # seg_pred = np.array(output)
+        # seg_gt = np.array(mask)
+        # ignore_index = seg_gt != 255
+        # seg_gt = seg_gt[ignore_index]
+        # seg_pred = seg_pred[ignore_index]
+        # confusion_matrix += get_confusion_matrix(seg_gt, seg_pred, 7)
+        #
+        # pos = confusion_matrix.sum(1)
+        # res0 = confusion_matrix.sum(0)
+        # tp = np.diag(confusion_matrix)
+        #
+        # IU_array = (tp / np.maximum(1.0, pos + res0 - tp))
 
         # calculate iou
-        # intersection, union = intersectionAndUnion(output, mask, num_class)
-        # inter_meter.update(intersection)
-        # union_meter.update(union)
+        intersection, union = intersectionAndUnion(output, mask, num_class)
+        inter_meter.update(intersection)
+        union_meter.update(union)
         del output
         del acc
 
     # summary
-    iou = IU_array
-    iou_mean = IU_array.mean()
-    # iou = inter_meter.sum / (union_meter.sum + 1e-10)
-    # iou_mean = iou.mean()
+    # iou = IU_array
+    # iou_mean = IU_array.mean()
+    iou = inter_meter.sum / (union_meter.sum + 1e-10)
+    iou_mean = iou.mean()
     acc_mean = acc_meter.average()
 
     res['acc'] = acc_mean
