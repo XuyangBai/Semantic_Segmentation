@@ -1,6 +1,5 @@
 from dataset import OutdoorDataset
 import torchvision.transforms as transforms
-import transforms as mytfm
 from torch.utils.data import DataLoader
 
 
