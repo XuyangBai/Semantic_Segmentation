@@ -2,7 +2,7 @@
 
 ## Performance:
 
-|  | mean IOU |  
+| Model | mean IOU |  
 | :---: | :---: | 
 | FCN32s | 45.07% | 
 | FCN16s | 44.92% | 
@@ -10,11 +10,11 @@
 | PSPNet | **49.25%** |
 
 ## Train the model
-```python
+```
 python main.py --test False --model pspnet --batch_size 24 --epoch 50 --gpu_mode True
 ```
 
 ## Test the model
-```python
+```
 python main.py --test True --model pspnet --gpu_mode True --pretrain [location of your pretrained model]
 ```
