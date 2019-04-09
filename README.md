@@ -7,7 +7,8 @@
 | FCN32s | 45.07% | 
 | FCN16s | 44.92% | 
 | FCN8s  | 45.28% |  
-| PSPNet | **49.25%** |
+| PSPNet | 49.25% |
+| PSPNet + focal Loss| **50.11%** |
 
 ## Train the model
 ```
