@@ -13,7 +13,7 @@ from fcn16s import FCN16s
 from fcn8s import FCN8s
 from pspnet import PSPnet
 from evaluate import cross_entropy2d
-
+from focal_loss import FocalLoss
 
 class Trainer(object):
     def __init__(self, args):
@@ -50,7 +50,8 @@ class Trainer(object):
 
         # experiment_id = args.model + time.strftime('%m%d%H%m')
         # self.writer = SummaryWriter(log_dir=self.log_dir + '/tboard_' + experiment_id)
-
+        self.loss = FocalLoss(gamma=1.25)
+        
         if args.pretrain != '':
             self._load_pretrain(args.pretrain)
 
@@ -66,6 +67,9 @@ class Trainer(object):
 
         self.model.train()
         best_iou = -1
+        res = self.evaluate()
+        print("Evaluation: Epoch %d: Iou_mean: %.4f, Acc: %.4f" %(0, res['iou_mean'], res['acc']))
+        print("IOU:", list(res['iou']))
         # self.weight = torch.FloatTensor([1.66, 1.66, 0.0, 1.66, 1.66, 1.66, 1.66])
         for epoch in range(self.epoch):
             self.train_epoch(epoch, self.verbose)
@@ -81,7 +85,7 @@ class Trainer(object):
                     best_iou = res['iou_mean']
                     self._save_model('best')
 
-            if epoch % 4 == 0:
+            if epoch % 7 == 0:
                 self.scheduler.step()
 
             if (epoch + 1) % 5 == 0:
@@ -111,7 +115,8 @@ class Trainer(object):
             output = self.model(img)
             # add more weight to the category with lower iou.
             # loss = cross_entropy2d(output, msk, self.weight)
-            loss = cross_entropy2d(output, msk)
+           #loss = cross_entropy2d(output, msk)
+            loss = self.loss(output, msk) 
             # backward
             loss.backward()
             self.optimizer.step()
@@ -158,16 +163,17 @@ class Trainer(object):
         w[2] = 0
         self.weight = torch.FloatTensor([x / sum(w) for x in w])
 
-    def generate_output(self):
-        save_dir = os.path.join(self.data_dir, 'val/predicts/')
+    def generate_output(self, name):
+        self.model.eval()
+        save_dir = os.path.join(self.data_dir, 'val/predicts/' + name + '/')
         for iter, (img, msk, id) in enumerate(self.test_dataloader):
             id = id[0]
             if self.gpu_mode:
                 img = img.cuda()
                 msk = msk.cuda()
             output = self.model(img).max(1)[1]
-            output = output.numpy()[0]
+            output = output.cpu().numpy()[0]
             im = Image.fromarray(np.uint8(output))
             im.save(save_dir + id + '.png')
             # Image.save(save_dir + id + '.png', output)
-            print("save %s.png" % save_dir)
+            print("save %s.png" % save_dir + id)
